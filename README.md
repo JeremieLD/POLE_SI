@@ -20,29 +20,30 @@ Exécuter le script, une fenêtre s'ouvre avec l'interface principale.
 ## Fonctionalités principales
 
 Ajouts de projets\
-    L'ajout de projet se fait par un bouton "Ajouter" et ouvre une nouvelle fenêtre où doivent être remplies les informations liées au projet :  Noms obligatoires, dates facultatives au format YYYY-MM-DD
-    
+L'ajout de projet se fait par un bouton "Ajouter" et ouvre une nouvelle fenêtre où doivent être remplies les informations liées au projet :\
+Noms obligatoires, dates facultatives au format YYYY-MM-DD
+
 Modifications de projets
-    * La modification d'un projet passe par la sélection d'une ligne dans le tableau principal et le bouton Modifier
-    * Toutes les informations sont éditables
-    * L'état "Terminé" peut-être appliqué par le bouton "Terminer" mais aussi désappliqué avec le bouton modifier, le calcul de l'état repasse alors automatiquement par les règles de calcul d'état.
+* La modification d'un projet passe par la sélection d'une ligne dans le tableau principal et le bouton Modifier
+* Toutes les informations sont éditables
+* L'état "Terminé" peut-être appliqué par le bouton "Terminer" mais aussi désappliqué avec le bouton modifier, le calcul de l'état repasse alors automatiquement par les règles de calcul d'état.
 
 Suppression d'un projet avec confirmation
-    * La suppression dd'un projet passe par la sélection d'une ligne dans le tableau principal et le bouton Supprimer
-    * La suppression demande confirmation.
+* La suppression dd'un projet passe par la sélection d'une ligne dans le tableau principal et le bouton Supprimer
+* La suppression demande confirmation.
 
 Marquer un projet comme "Terminé"
-    * Le bouton "Terminer" permet de marquer un projet comme "Terminé" pour son état.
+* Le bouton "Terminer" permet de marquer un projet comme "Terminé" pour son état.
 
 Tri par colonnes
-    * Toutes les colonnes peuvent être triées par ordre croissant/décroissant à l'exception de la colonne "état"
+* Toutes les colonnes peuvent être triées par ordre croissant/décroissant à l'exception de la colonne "état"
 
 Calcul automatique de l'état
-    * L'état d'un projet est calculé automatiquement en fonction du nombre de jours restants (différence entre date de création et date d'expiration)
-    * Si ce nombre (jours_restants) > 7, l'état est "En cours"
-    * Si jours_restants <= 7, l'état est "Urgent"
-    * Si jours_restants < 0, l'état est "En retard"
-    * Sinon l'état est "non défini" (date non précisé)
+* L'état d'un projet est calculé automatiquement en fonction du nombre de jours restants (différence entre date de création et date d'expiration)
+* Si ce nombre (jours_restants) > 7, l'état est "En cours"
+* Si jours_restants <= 7, l'état est "Urgent"
+* Si jours_restants < 0, l'état est "En retard"
+* Sinon l'état est "non défini" (date non précisé)
 
 ## Démarche, Choix techniques
 CustomTKinter : interface graphique moderne offrant compromis entre simplicité, fonctionnalité et esthétique.   
