@@ -46,9 +46,9 @@ Classe unique : structure claire, fonctions pour chaque action
 On personalise l'interface en respectant les contraintes et en mettant des boutons associées aux actions requises. 
 
 ## Limites connues
-Pas de système de sauvegarde externe (lié au fichier BDD_projets.db)
-Pas de filtrage combiné (par état ou par date)
-Pas de connexion en simultané pour accéder à la BDD
+Pas de système de sauvegarde externe (lié au fichier BDD_projets.db) \\
+Pas de filtrage combiné (par état ou par date) \\
+Pas de connexion en simultané pour accéder à la BDD \\
 
 ## Pistes d'amélioration
 Ajout de filtrage dynamique 
