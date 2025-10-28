@@ -20,11 +20,11 @@ Exécuter le script, une fenêtre s'ouvre avec l'interface principale.
 ## Fonctionalités principales
 
 Ajouts de projets\
-    L'ajout de projet se fait par un bouton Ajouter et ouvre une nouvelle fenêtre où doivent être remplies les informations liées au projet :  Noms obligatoires, dates facultatives au format YYYY-MM-DD\
+    L'ajout de projet se fait par un bouton "Ajouter" et ouvre une nouvelle fenêtre où doivent être remplies les informations liées au projet :\  Noms obligatoires, dates facultatives au format YYYY-MM-DD\
 Modifications de projets\
-    - La modification d'un projet passe par la sélection d'une ligne dans le tableau principal et le bouton Modifier
+    * La modification d'un projet passe par la sélection d'une ligne dans le tableau principal et le bouton Modifier
     * Toutes les informations sont éditables
-    + L'état "Terminé" peut-être appliqué par le bouton "Terminer" mais aussi désappliqué avec le bouton modifier, le calcul de l'état repasse alors automatiquement par les règles de calcul d'état.
+    * L'état "Terminé" peut-être appliqué par le bouton "Terminer" mais aussi désappliqué avec le bouton modifier, le calcul de l'état repasse alors automatiquement par les règles de calcul d'état.
 Suppression d'un projet avec confirmation\  
     * La suppression dd'un projet passe par la sélection d'une ligne dans le tableau principal et le bouton Supprimer
     * La suppression demande confirmation.
@@ -52,8 +52,8 @@ Pas de connexion en simultané pour accéder à la BDD
 
 ## Pistes d'amélioration
 Ajout de filtrage dynamique\
-Exportation vers CSV, Excel, Pdf\  
-Modifier les fenêtres pop-up pour des notifications plus discrètes\  
-Système multi-utilisateur avec authentification\ 
-Persistance du tri et des filtres entre les sessions\ 
+Exportation vers CSV, Excel, Pdf\
+Modifier les fenêtres pop-up pour des notifications plus discrètes\
+Système multi-utilisateur avec authentification\
+Persistance du tri et des filtres entre les sessions\
 Vue calendrier ou timeline des projets
