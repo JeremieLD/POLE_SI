@@ -9,8 +9,9 @@ L'interface est issu de CustomTKinter et l'application s'appuie sur une base de 
 Prérequis :
 Python 3.10+
 Module :
+```
 pip install customtkinter
-
+```
 ## Lancement
 
 Placer le script gestion_projets.py et le fichier BDD_projets.db dans un même dossier.
@@ -46,9 +47,9 @@ Classe unique : structure claire, fonctions pour chaque action
 On personalise l'interface en respectant les contraintes et en mettant des boutons associées aux actions requises. 
 
 ## Limites connues
-Pas de système de sauvegarde externe (lié au fichier BDD_projets.db) \\
-Pas de filtrage combiné (par état ou par date) \\
-Pas de connexion en simultané pour accéder à la BDD \\
+Pas de système de sauvegarde externe (lié au fichier BDD_projets.db)\
+Pas de filtrage combiné (par état ou par date)
+Pas de connexion en simultané pour accéder à la BDD
 
 ## Pistes d'amélioration
 Ajout de filtrage dynamique 
