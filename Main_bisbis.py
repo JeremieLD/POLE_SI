@@ -49,7 +49,8 @@ class App(ctk.CTk):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nom TEXT NOT NULL,
                 date_creation DATE,
-                date_expiration DATE
+                date_expiration DATE,
+                termine INTEGER DEFAULT 0
             )
         """)
         self.connexion.commit()
@@ -125,13 +126,20 @@ class App(ctk.CTk):
         # Bouton Supprimer (supprime la ligne sélectionnée)
         ctk.CTkButton(frame_boutons,text="🗑️ Supprimer",command=self.supprimer_ligne_selectionnee,fg_color="red",hover_color="darkred",width=130).pack(side="left", padx=10)
     
-    def calculer_etat(self, date_expiration):
+        # Bouton Terminer (marque un projet comme terminé)
+        ctk.CTkButton(frame_boutons,text="Terminer", command=self.marquer_terminer,fg_color="blue",hover_color="darkblue",width=130).pack(side="left",padx=10)
+
+
+    def calculer_etat(self, date_expiration,termine):
         """
-        Calcule l'état du projet en fonction de sa date d'expiration.
+        Calcule l'état du projet en fonction de sa date d'expiration et de son statut.
         Si pas de date, retourne "Non défini".
         """
+        if termine == 1:
+            return "Terminé"
+        
         if not date_expiration:  # Si la date est vide ou None
-            return "⚪ Non défini"
+            return "Non défini"
         
         try:
             date_exp = datetime.strptime(date_expiration, "%Y-%m-%d").date()
@@ -139,13 +147,13 @@ class App(ctk.CTk):
             jours_restants = (date_exp - aujourd_hui).days
             
             if jours_restants < 0:
-                return "❌ Expiré"
+                return "En retard"
             elif jours_restants <= 7:
-                return "⚠️ Urgent"
+                return "Urgent"
             else:
-                return "✅ Actif"
+                return "En cours"
         except:
-            return "⚪ Non défini"
+            return "Non défini"
     
     def afficher_projets(self, projets=None):
         """
@@ -172,7 +180,8 @@ class App(ctk.CTk):
             date_expiration = projet[3] if projet[3] else "-"
             
             # Calculer l'état
-            etat = self.calculer_etat(projet[3])
+            termine= projet[4] if len(projet)>4 else 0
+            etat = self.calculer_etat(projet[3],termine)
             
             # Insérer la ligne dans le tableau
             # insert("", "end", ...) ajoute une ligne à la fin
@@ -219,7 +228,15 @@ class App(ctk.CTk):
         resultats = self.cursor.fetchall()
         
         # Afficher les résultats
-        self.afficher_projets(resultats)
+        if not resultats:
+            # Fenêtre pour signaler qu'il n'y a aucun résultat
+            fenetre = ctk.CTkToplevel(self)
+            fenetre.title("Recherche")
+            fenetre.geometry("400x200")
+            ctk.CTkLabel(fenetre, text="Aucun projet trouvé", font=("Arial", 16, "bold")).pack(pady=30)
+            ctk.CTkButton(fenetre, text="OK", command=fenetre.destroy).pack(pady=10)
+        else:
+            self.afficher_projets(resultats)
     
     def voir_details_ligne(self, event):
         """
@@ -281,19 +298,51 @@ class App(ctk.CTk):
             date_expiration = entree_date_expiration.get().strip() or None
             
             if not nom:
-                print("❌ Le nom est obligatoire")
+                fenetre_erreur= ctk.CTkToplevel(fenetre)
+                fenetre_erreur.title("Erreur")
+                fenetre_erreur.geometry("400x200")
+                ctk.CTkLabel(fenetre_erreur, text= "Le nom est obligatoire", font=("Arial",14)).pack(pady=30)
+                ctk.CTkButton(fenetre_erreur,text="OK", command=fenetre_erreur.destroy).pack(pady=10)               
                 return
             
+            self.cursor.execute("SELECT COUNT(*) FROM projets WHERE nom = ?", (nom,))
+            if self.cursor.fetchone()[0]>0:
+                fenetre_erreur = ctk.CTkToplevel(fenetre)
+                fenetre_erreur.title("Erreur")
+                fenetre_erreur.geometry("400x200")
+                ctk.CTkLabel(fenetre_erreur, text="Nom de projet déjà utilisé", font=("Arial",14)).pack(pady=30)
+                ctk.CTkButton(fenetre_erreur, text="OK", command=fenetre_erreur.destroy).pack(pady=10)
+                return
+            
+            if date_creation:
+                try:
+                    datetime.strptime(date_creation, "%Y-%m-%d")
+                except ValueError:
+                    fenetre_erreur = ctk.CTkToplevel(fenetre)
+                    fenetre_erreur.title("Erreur")
+                    fenetre_erreur.geometry("400x200")
+                    ctk.CTkLabel(fenetre_erreur, text="Format de date de création invalide", font=("Arial", 14)).pack(pady=30)
+                    ctk.CTkButton(fenetre_erreur, text="OK",command=fenetre_erreur.destroy).pack(pady=10)
+                    return
+            
+            if date_expiration:
+                try:
+                    datetime.strptime(date_expiration, "%Y-%m-%d")
+                except ValueError:
+                    fenetre_erreur = ctk.CTkToplevel(fenetre)
+                    fenetre_erreur.title("Erreur")
+                    fenetre_erreur.geometry("400x200")
+                    ctk.CTkLabel(fenetre_erreur, text="Format de date d'expiration invalide", font=("Arial", 14)).pack(pady=30)
+                    ctk.CTkButton(fenetre_erreur, text="OK",command=fenetre_erreur.destroy).pack(pady=10)
+                    return
+                
             # Si les dates sont vides, on met None (NULL en SQL)
             date_creation = date_creation if date_creation else None
             date_expiration = date_expiration if date_expiration else None
             
-            self.cursor.execute(
-                "INSERT INTO projets (nom, date_creation, date_expiration) VALUES (?, ?, ?)",
-                (nom, date_creation, date_expiration)
-            )
+            self.cursor.execute("INSERT INTO projets (nom, date_creation, date_expiration) VALUES (?, ?, ?)",(nom, date_creation, date_expiration))
             self.connexion.commit()
-            
+
             print(f"✅ Projet '{nom}' ajouté")
             fenetre.destroy()
             self.afficher_projets()
@@ -317,10 +366,14 @@ class App(ctk.CTk):
         date_creation_actuelle = valeurs[2] if valeurs[2] != "-" else ""
         date_expiration_actuelle = valeurs[3] if valeurs[3] != "-" else ""
         
+        # Récupérer l'état terminé depuis la BDD
+        self.cursor.execute("SELECT termine FROM projets WHERE id = ?", (id_projet,))
+        termine_actuel = self.cursor.fetchone()[0]
+
         # Créer la fenêtre de modification
         fenetre = ctk.CTkToplevel(self)
         fenetre.title("Modifier un projet")
-        fenetre.geometry("400x320")
+        fenetre.geometry("400x400")
         
         ctk.CTkLabel(fenetre, text=f"✏️ Modifier le projet ID {id_projet}", font=("Arial", 18, "bold")).pack(pady=15)
         
@@ -339,22 +392,62 @@ class App(ctk.CTk):
         entree_date_expiration.insert(0, date_expiration_actuelle)
         entree_date_expiration.pack(pady=5)
         
+        # Checkbox pour l'état terminé
+        ctk.CTkLabel(fenetre, text="Etat : ").pack(pady=5)
+        checkbox_termine= ctk.CTkCheckBox(fenetre, text="Marquer comme terminé")
+        if termine_actuel==1:
+            checkbox_termine.select()
+        checkbox_termine.pack(pady=5)
+
         def modifier():
             nom = entree_nom.get().strip()
             date_creation = entree_date_creation.get().strip()
             date_expiration = entree_date_expiration.get().strip()
-            
+            termine = 1 if checkbox_termine.get() else 0
+
             if not nom:
-                print("❌ Le nom est obligatoire")
+                fenetre_erreur= ctk.CTkToplevel(fenetre)
+                fenetre_erreur.title("Erreur")
+                fenetre_erreur.geometry("400x200")
+                ctk.CTkLabel(fenetre_erreur, text="Le nom est obligatoire", font=("Arial",14)).pack(pady=30)
+                ctk.CTkButton(fenetre_erreur, text="OK", command=fenetre_erreur.destroy).pack(pady=10)
                 return
             
+            self.cursor.execute("SELECT COUNT(*) FROM projets WHERE nom = ? AND id != ?", (nom, id_projet))
+            if self.cursor.fetchone()[0]>0:
+                fenetre_erreur = ctk.CTkToplevel(fenetre)
+                fenetre_erreur.title("Erreur")
+                fenetre_erreur.geometry("400x200")
+                ctk.CTkLabel(fenetre_erreur, text="Nom de projet déjà utilisé", font=("Arial",14)).pack(pady=30)
+                ctk.CTkButton(fenetre_erreur, text="OK", command=fenetre_erreur.destroy).pack(pady=10)
+                return
+            
+            if date_creation:
+                try:
+                    datetime.strptime(date_creation, "%Y-%m-%d")
+                except ValueError:
+                    fenetre_erreur = ctk.CTkToplevel(fenetre)
+                    fenetre_erreur.title("Erreur")
+                    fenetre_erreur.geometry("400x200")
+                    ctk.CTkLabel(fenetre_erreur, text="Format de date de création invalide", font=("Arial", 14)).pack(pady=30)
+                    ctk.CTkButton(fenetre_erreur, text="OK",command=fenetre_erreur.destroy).pack(pady=10)
+                    return
+            
+            if date_expiration:
+                try:
+                    datetime.strptime(date_expiration, "%Y-%m-%d")
+                except ValueError:
+                    fenetre_erreur = ctk.CTkToplevel(fenetre)
+                    fenetre_erreur.title("Erreur")
+                    fenetre_erreur.geometry("400x200")
+                    ctk.CTkLabel(fenetre_erreur, text="Format de date d'expiration invalide", font=("Arial", 14)).pack(pady=30)
+                    ctk.CTkButton(fenetre_erreur, text="OK",command=fenetre_erreur.destroy).pack(pady=10)
+                    return
+
             date_creation = date_creation if date_creation else None
             date_expiration = date_expiration if date_expiration else None
             
-            self.cursor.execute(
-                "UPDATE projets SET nom = ?, date_creation = ?, date_expiration = ? WHERE id = ?",
-                (nom, date_creation, date_expiration, id_projet)
-            )
+            self.cursor.execute("UPDATE projets SET nom = ?, date_creation = ?, date_expiration = ?,termine= ? WHERE id = ?",(nom, date_creation, date_expiration, termine, id_projet))
             self.connexion.commit()
             
             print(f"✅ Projet ID {id_projet} modifié")
@@ -399,6 +492,27 @@ class App(ctk.CTk):
         ctk.CTkButton(frame_boutons, text="Oui, supprimer", command=confirmer, fg_color="red").pack(side="left", padx=10)
         ctk.CTkButton(frame_boutons, text="Annuler", command=fenetre.destroy).pack(side="left", padx=10)
     
+    def marquer_terminer(self):
+        """Marque le projet comme terminé """
+        selection = self.tableau.selection()
+        if not selection:
+            print("Veuillez sélectionner une ligne")
+            return
+        
+        # Récupération de l'ID du projet
+        valeurs = self.tableau.item(selection[0])["values"]
+        id_projet = valeurs[0]
+        nom_projet = valeurs[1]
+
+        # Mise à jour de l'état 
+        self.cursor.execute("UPDATE projets SET termine = 1 WHERE id = ?", (id_projet,))
+        self.connexion.commit()
+
+        print(f"Projet '{nom_projet}' marqué comme terminé")
+        self.afficher_projets()
+
+
+
     def fermer_app(self):
         """Ferme proprement la connexion à la BDD puis l'application."""
         self.connexion.close()
